@@ -1,8 +1,8 @@
 Package: rankFD
 Type: Package
 Title: Rank-Based Tests for General Factorial Designs
-Version: 0.0.4
-Date: 2020-01-27
+Version: 0.0.5
+Date: 2020-01-28
 Author: Frank Konietschke, Sarah Friedrich, Edgar Brunner, Markus Pauly
 Maintainer: Frank Konietschke <frank.konietschke@charite.de>
 Depends:

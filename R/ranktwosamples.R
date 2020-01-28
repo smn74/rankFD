@@ -379,7 +379,7 @@ conf.int=TRUE,conf.level=(1 - alpha))
 p.wilcox=pvalue(Wilcox)
 Z.wilcox=statistic(Wilcox)
 if(shift.int==TRUE){
-shiftint=sort(-1*c(confint(Wilcox)[1]$conf.int))
+shiftint=sort(-1*c(Wilcox@confint(1-alpha)$conf.int))
 Lower.Shift=shiftint[1]
 Upper.Shift=shiftint[2]
 }
