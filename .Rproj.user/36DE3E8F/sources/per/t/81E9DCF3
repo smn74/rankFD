@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552478938175.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3313634558",
+    "id" : "81E9DCF3",
+    "lastKnownWriteTime" : 1554387776,
+    "last_content_update" : 1554387776896,
+    "path" : "~/Dropbox/rankFD/rankFD/R/ranktwosamples.R",
+    "project_path" : "R/ranktwosamples.R",
+    "properties" : {
+        "cursorPosition" : "446,34",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

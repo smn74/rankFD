@@ -1,0 +1,9 @@
+data(Muco)
+Muco2 <- subset(Muco, Disease != "OAD")
+twosample <- rank.two.samples(HalfTime ~ Disease, data = Muco2,
+                                 alternative = "greater", method = "probit", wilcoxon = "exact", plot.simci = FALSE)
+
+formula <- HalfTime ~ Disease
+data <- Muco2
+
+

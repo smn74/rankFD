@@ -1,0 +1,16 @@
+{
+    "contents" : "#' Half-Time of Mucociliary Clearance\n#'\n#' Mucociliary efficiency was assessed from the rate of removal of dust in three different groups of subjects\n#' \n#' @format A data frame with 14 rows and 2 variables:\n#' \\describe{\n#'   \\item{HalfTime}{Half-Time of Mucociliary clearance, assessed from the rate of removal of dust}\n#'   \\item{Disease}{normal subjects, subjects with obstructive airways disease (OAD) and subjects with asbestosis}\n#' }\n#' \n#' @usage data(Muco)\n#' \n#' @source Hollander, M., Wolfe, D. A., Chicken, E. (2014). \\emph{Nonparametric Statistical Methods}. Wiley Series in Probability and Statistics.\n#' \n#'         Thomson, M. L. and Short, M. D. (1969). Mucociliary function in health, chronic obstructive airway disease, and asbestosis. Journal of Applied Physiology \\bold{26}, 535--539.\n\"Muco\"\n\n\n#' Coal Acidity\n#'\n#' Coal acidity values determined under each of three NaOH concentration levels for two different samples from each type of coal\n#' \n#' @format A data frame with 18 rows and 3 variables:\n#' \\describe{\n#'   \\item{Acidity}{resulting acidity values}\n#'   \\item{NaOH}{the NaOH concentration}\n#'   \\item{Type}{three different types of coal: \"Morwell\", \"Yallourn\" and \"Maddingley\"}\n#' }\n#' \n#' @usage data(Coal)\n#' \n#' @source Hollander, M., Wolfe, D. A., Chicken, E. (2014). \\emph{Nonparametric Statistical Methods}. Wiley Series in Probability and Statistics.\n#' \n#'         Sternhell, S. (1958). Chemistry of brown coals VI: Further aspects of the chemistry of hydroxyl groups in Victorian brown coals. Australian Journal of Applied Science \\bold{9}, 375--379.\n\"Coal\"\n",
+    "created" : 1461739633184.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3631724978",
+    "id" : "8E0BC187",
+    "lastKnownWriteTime" : 1466599688,
+    "path" : "~/Dropbox/rankFD/rankFD/R/Data.R",
+    "project_path" : "R/Data.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

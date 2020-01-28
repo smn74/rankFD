@@ -1,0 +1,16 @@
+{
+    "contents" : "#' @export \nplot.rankFD <- function (x, ...) {\n  \n  object <- x\n  dots <- list(...)\n  a <- object$plotting\n  \n  # default values\n  args <- list(nf = a$nf, fac_names = a$fac_names, n.hypotheses = a$n.hypotheses,\n               Descriptive.Factors = a$Descriptive.Factors, CI.method = a$CI.method)\n  \n  args[names(dots)] <- dots\n  \n  do.call(plotting, args = args)\n}\n\n#' @export\nprint.rankFD <- function (x, ...) {\n  cat(\"\\n\", \"Descriptive:\", \"\\n\", sep = \"\")\n  print(x$Descriptive)\n  cat(\"\\n\", \"Wald-Type Statistic (WTS):\", \"\\n\", sep = \"\")\n  print(x$Wald.Type.Statistic)\n  cat(\"\\n\", \"ANOVA-Type Statistic (ATS):\", \"\\n\", sep = \"\")\n  print(x$ANOVA.Type.Statistic)\n}\n",
+    "created" : 1467116653468.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2554361254",
+    "id" : "6A12FF9E",
+    "lastKnownWriteTime" : 1461739767,
+    "path" : "~/Dropbox/rankFD/rankFD/R/utility_functions.R",
+    "project_path" : "R/utility_functions.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552479126739.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3444960387",
+    "id" : "A2AAE427",
+    "lastKnownWriteTime" : 1552479490,
+    "last_content_update" : 1552479490979,
+    "path" : "~/Dropbox/rankFD/rankFD/R/psr.R",
+    "project_path" : "R/psr.R",
+    "properties" : {
+        "cursorPosition" : "1,35",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
