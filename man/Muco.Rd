@@ -4,11 +4,13 @@
 \name{Muco}
 \alias{Muco}
 \title{Half-Time of Mucociliary Clearance}
-\format{A data frame with 14 rows and 2 variables:
+\format{
+A data frame with 14 rows and 2 variables:
 \describe{
   \item{HalfTime}{Half-Time of Mucociliary clearance, assessed from the rate of removal of dust}
   \item{Disease}{normal subjects, subjects with obstructive airways disease (OAD) and subjects with asbestosis}
-}}
+}
+}
 \source{
 Hollander, M., Wolfe, D. A., Chicken, E. (2014) Nonparametric Statistical Methods. Wiley Series in Probability and Statistics.
 

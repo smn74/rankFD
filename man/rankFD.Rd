@@ -4,72 +4,131 @@
 \alias{rankFD}
 \title{Rank-based tests for general factorial designs}
 \usage{
-rankFD(formula, data, alpha = 0.05, CI.method = c("Logit", "Normal"),
-  effect = c("unweighted", "weighted"), hypothesis = c("H0F", "H0p"),
-  Factor.Information = FALSE)
+rankFD(
+  formula,
+  data,
+  alpha = 0.05,
+  CI.method = c("logit", "normal"),
+  effect = c("unweighted", "weighted"),
+  hypothesis = c("H0F", "H0p"),
+  Factor.Information = FALSE,
+  contrast = NULL,
+  sci.method = c("fisher", "multi.t"),
+  info = TRUE,
+  covariance = FALSE,
+  rounds = 4
+)
 }
 \arguments{
 \item{formula}{A model \code{\link{formula}} object. The left hand side
-contains the response variable and the right hand side contains the factor
-variables of interest. An interaction term must be specified.}
+contains the response variable and the right hand side contains 
+the factor variables of interest. An interaction term must be specified.}
 
 \item{data}{A data.frame, list or environment containing the variables in 
 \code{formula}. The default option is \code{NULL}.}
 
 \item{alpha}{A number specifying the significance level; the default is 0.05.}
 
-\item{CI.method}{Either "Logit" or "Normal", specifying the method used for
+\item{CI.method}{Either "logit" or "normal", specifying the method used for
 calculation of the confidence intervals.}
 
-\item{effect}{Should the weighted or unweighted effects be calculated?}
+\item{effect}{In case of weighted, then weighted (by sample sizes) relative 
+effects are estimated using classical ranks (mid-ranks) of the data. 
+Otherwise, in case of effect="unweighted", unweighted relative 
+effects are estimated with pseudo-ranks. The default option is "unweighted" resulting in pseudo-rank statistics.}
 
-\item{hypothesis}{The null hypothesis to test, either "H0F" or "H0p".}
+\item{hypothesis}{The null hypothesis to be tested, either "H0F" or "H0p". The option "H0F" computes tests for testing hypotheses
+formulated in terms of distribution functions. Otherwise, 
+hypotheses in relative effects are tested. The latter allows for variance heteroscedasticity even
+under the null hypothesis of no treatment effect and thus covers the Nonparametric Behrens-Fisher problem.}
 
-\item{Factor.Information}{Logical. If TRUE, descriptive statistics for 
-the different factor level combinations is printed.}
+\item{Factor.Information}{Logical. If TRUE, descriptive statistics with point estimators, standard error as well as confidence intervals for 
+each main and interaction effect in the model are printed. The results can furthermore be plotted with the plot function.}
+
+\item{contrast}{a list containing the name of the main or interaction effect (written as group1:group2), 
+a pre-defined contrast ("Dunnett", "Tukey", "Sequen", "AVE", "Changepoint", 
+"Williams", "Marcus", "McDermott", "UmbrellaWilliams", "GrandMean") or a user-defined contrast matrix. If the contrast coefficients do not
+sum up to 0, or if their sum of absolutes differs from 2, the coefficients are normalized.}
+
+\item{sci.method}{Either "fisher" or "multi.t" as approximation method for the multiple contrast tests and simultaneous confidence intervals. 
+The default option is "fisher".}
+
+\item{info}{Logical. If TRUE, additional output information and explanation is printed to the console.}
+
+\item{covariance}{Logical. If TRUE, the estimated covariance matrix of the vector of relative effects is computed.}
+
+\item{rounds}{Number of  decimals of the output values. The default option is rounds=4 (4 decimals).}
 }
 \value{
-An \code{rankFD} object containing the following components:
-\item{Descriptive}{Some descriptive statistics of the data for all factor
-   level combinations. Displayed are the number of individuals per factor
-   level combination (size), the relative effect (pd), variance and 100*(1-alpha)\% confidence
-   intervals.}
- \item{WTS}{The value of the WTS along with degrees of freedom of the central chi-square distribution and p-value}
- \item{ATS}{The value of the ATS, degrees of freedom of the central F distribution and the corresponding p-value.}
+A \code{rankFD} object containing the following components:
+\item{Call}{Given response and factor names (formula)}           
+\item{Descriptive}{Descriptive statistics of the data for all factor
+                   level combinations. Displayed are the number of individuals per factor
+                   level combination (size), the relative effect (Rel.Effect), Standard Error and  100*(1-alpha)\% confidence
+                   intervals.}
+\item{WTS}{The value of the WTS along with degrees of freedom of the central chi-square distribution and p-value.}
+\item{ATS}{The value of the ATS, degrees of freedom of the central F distribution and the corresponding p-value.}
+\item{Kruskal-Wallis-Test}{The value of the Kruskal-Wallis test along with degrees of freedom and p-value. If effect="unweighted", the Kruskal-Wallis test
+                   using pseudo-ranks is computed. Otherwise, if effect="unweighted", the "established" Kruskal-Wallis test based on ranks is returned.} 
+\item{MCTP}{Contrast matrix, local Results in terms of point estimates, standard error, value of the test statistic, (1-alpha)100% simultaneous confidence
+                   intervals as well as adjusted p-values. As a summary, the function also returns the global test decision by printing the maximum test
+                   statistic (in absolute value) as well as the (1-alpha) critical value from the multivariate T-distribution.}
+\item{Covariance.Matrix}{The estimated covariance matrix of the vector of the estimated relative effects. Note that the vector is multiplied by root N.}
+\item{Factor.Information}{Descriptive tables containing the point estimators, standard errors as well as (1-alpha)100% confidence intervals for all possible main
+                    and interaction effects in the model. The confidence intervals are not simultaneous and for data descriptive purpose only.}
 }
 \description{
-The package provides the Wald-type as well as the ANOVA-type statistic 
-for rank-based factorial designs, i.e., even for ordinal data.  It is
-implemented for crossed designs and allows
-for an arbitrary number of factor combinations as well as different sample
-sizes.
+The function implements purely nonparametric rank-based methods for the analysis 
+of general factorial designs. You can chose to use either classical ranks (mid-ranks) 
+(\code{effect="weighted"}) or pseudo-ranks (\code{effect="unweighted"})
+for making inference. Pseudo-ranks are used by default. 
+The package implements point estimators of relative effects (weighted and unweighted) as
+well as test procedures (Wald-Type and ANOVA-Type statistics) for testing global null hypotheses
+formulated in either (i) distribution functions \code{hypothesis="H0F"} 
+or (ii) relative effects \code{hypothesis="H0p"}. In case of one-way factorial 
+designs, the function additionally computes 
+the Kruskal-Wallis test either with ranks or pseudo-ranks. In addition, multiple 
+contrast tests (and simultaneous confidence intervals)
+for the main or interaction effects are implemented within the \code{contrast} 
+statement. You can either choose from pre-defined contrasts (options see below) or
+ you can provide your own user-defined contrast matrix. Both the
+Fisher-transformation (\code{sci.method="fisher"}) as well as a multivariate
+t-approximation (\code{sci.method="multi.t"}) are implemented.
+The Fisher approximation is used by default. To visualize the results, you can plot
+the simultaneous confidence intervals using the \code{plot.sci} function.
+Furthermore, confidence interval plots for the main or interaction relative effects
+(not simultaneous) are available within the \code{plot} function.
 }
 \details{
-The rankFD() function calculates the Wald-type statistic (WTS) and the ANOVA-type 
-statistic (ATS) for general factorial designs for testing the null hypotheses \eqn{H_0^F: CF = 0}
-(cf. Akritas et al. (1997) for the WTS and Brunner et al. (1997) for the ATS) based on weighted effect measures,
-and \eqn{H_0^p: Cp = 0} for the vector of unweighted treatment effects as described in Brunner et al. (2016).
-In the latter paper, the CIs for the unweighted effects (\eqn{p_i} in their notation) are described and 
-CIs for the weighted effects (\eqn{r_i} in their notation) are obtained
-similarly.
+The rankFD() function calculates the Wald-type statistic (WTS), ANOVA-type 
+statistic (ATS) as well as multiple contrast tests for general factorial designs 
+for testing the null hypotheses \eqn{H_0^F: CF = 0} or \eqn{H_0^p: Cp = 0}. 
+Almost every method explained in the comprehensive textbook from Brunner et al. (2019) 
+is implemented in rankFD. The test procedures for testing null hypotheses in distribution 
+functions have initially been proposed by Akritas et al. (1997), whereas methods for testing null 
+hypotheses formulated in relative effects have been proposed by Brunner et al. (2017). 
+We note that the multiple contrast test procedure using Fisher approximation computes critical and 
+p-values from a multivariate t-distribution with respective degrees of freedom. Simulation studies by
+Konietschke et al. (2012) demonstrated an accurate control of the type-1 error rate and
+the procedure is therefore recommended.
 }
 \examples{
 data(Coal)
-model <- rankFD(Acidity ~ NaOH * Type, data = Coal, CI.method = "Normal",
+model <- rankFD(Acidity ~ NaOH * Type, data = Coal, CI.method = "normal",
 effect = "unweighted", hypothesis = "H0F")
 
 data(Muco)
-model.oneway <- rankFD(HalfTime ~ Disease, data = Muco, CI.method = "Logit",
+model.oneway <- rankFD(HalfTime ~ Disease, data = Muco, CI.method = "logit",
 effect = "weighted", hypothesis = "H0p")
 plot(model.oneway)
 
 
 }
 \references{
-Brunner, E., Bathke, A. and Konietschke, F. Rank and Pseudo-Rank Procedures 
+Brunner, E., Bathke, A.C., Konietschke, F. Rank and Pseudo-Rank Procedures 
 for Independent Observations in Factorial Designs. Springer International Publishing, 2018.
 
-Brunner, E., Konietschke, F., Pauly, M., & Puri, M. L. (2017). Rank-based procedures in factorial designs: 
+Brunner, E., Konietschke, F., Pauly, M., Puri, M. L. (2017). Rank-based procedures in factorial designs: 
 Hypotheses about non-parametric treatment effects. Journal of the Royal Statistical Society: Series B 
 (Statistical Methodology), 79(5), 1463-1485.
 
@@ -78,4 +137,7 @@ Journal of the American Statistical Association 92, 258-265.
 
 Brunner, E., Dette, H., and Munk, A. (1997). Box-Type Approximations in Nonparametric Factorial Designs. Journal
 of the American Statistical Association 92, 1494-1502.
+
+Konietschke, F., Hothorn, L. A., Brunner, E. (2012). Rank-based multiple test procedures and simultaneous confidence intervals. Electronic Journal of Statistics,
+6, 738-759.
 }

@@ -33,3 +33,23 @@
 #' 
 #'         Sternhell, S. (1958) Chemistry of brown coals VI: Further aspects of the chemistry of hydroxyl groups in Victorian brown coals. Australian Journal of Applied Science \bold{9}, 375--379.
 "Coal"
+
+
+#' Irritation of Nasal Mucosa
+#'
+#' Damage of two gaseous substances on nasal mucosa membrane of mice
+#' 
+#' @format A data frame with 150 rows and 3 variables:
+#' \describe{
+#'   \item{subst}{The substance given, either 1 or 2}
+#'   \item{conc}{the concentration in which the substance was given, 1, 2 or 5 ppm}
+#'   \item{score}{degree of irritation assessed using an ordinal score ranging from 0 to 4 with 0 = “no irritation”,
+#'    1 = “mild irritation”, 2 = “strong irritation”, 3 = “severe irritation” and 4 = “irreversible damage”}
+#' }
+#' 
+#' @usage data(nms)
+#' 
+#' @source Brunner, E., Bathke, A.C., Konietschke, F. Rank and Pseudo-Rank Procedures 
+#' for Independent Observations in Factorial Designs. Springer International Publishing, 2018.
+#' 
+"nms"

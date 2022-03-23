@@ -4,33 +4,40 @@
 \alias{rank.two.samples}
 \title{A function for analyzing two-sample problems}
 \usage{
-rank.two.samples(formula, data, conf.level = 0.95,
-  alternative = c("two.sided", "less", "greater"), rounds = 3,
-  method = c("logit", "probit", "normal", "t.app", "permu"),
-  plot.simci = FALSE, info = TRUE, wilcoxon = c("asymptotic",
-  "exact"), shift.int = TRUE, nperm = 10000)
+rank.two.samples(
+  formula,
+  data,
+  conf.level = 0.95,
+  alternative = c("two.sided", "less", "greater"),
+  rounds = 4,
+  method = c("t.app", "logit", "probit", "normal"),
+  permu = TRUE,
+  info = TRUE,
+  wilcoxon = c("asymptotic", "exact"),
+  shift.int = TRUE,
+  nperm = 10000
+)
 }
 \arguments{
 \item{formula}{A model \code{\link{formula}} object. The left hand side
 contains the response variable and the right hand side contains the factor
-variables of interest. An interaction term must be specified.}
+variables of interest.}
 
 \item{data}{A data.frame, list or environment containing the variables in 
 \code{formula}. The default option is \code{NULL}.}
 
 \item{conf.level}{A number specifying the confidence level; the default is 0.95.}
 
-\item{alternative}{Which alternative is considered? One of "two.sided", "less", "greater".}
+\item{alternative}{A character string specifying the alternative hypothesis. One of "two.sided", "less", "greater". You can specify just the initial letter.}
 
-\item{rounds}{Value specifying the number of digits the results are rounded to.}
+\item{rounds}{Value specifying the number of digits the results are rounded to. Default is 4 decimals.}
 
 \item{method}{specifying the method used for calculation of the confidence intervals.
-One of "logit", "probit", "normal", "t.app" and "permu".}
+One of "t.app", "logit", "probit" or "normal".}
 
-\item{plot.simci}{Logical, indicating whether or not confidence intervals
-should be plotted}
+\item{permu}{A logical variable indicating whether you want to compute a studentized permutation test.}
 
-\item{info}{Logical. info = FALSE suppresses the output of additional information
+\item{info}{A logical variable. Here, info = FALSE suppresses the output of additional information
 concerning e.g. the interpretation of the test results.}
 
 \item{wilcoxon}{asymptotic or exact calculation of Wilcoxon test.}
@@ -40,23 +47,40 @@ concerning e.g. the interpretation of the test results.}
 \item{nperm}{Number of permutations used, default is 10000.}
 }
 \description{
-The \code{rank.two.samples()} function calculates the weighted or unweighted treatment effect in
-a two-sample problem. In addition to \code{\link{rankFD}}, the user can specify the alternative
-and choose from a variety of different possibilities to calculate confidence intervals, see the details
-below. Furthermore, a Wilcoxon test is calculate with the possibility to consider shift effects.
+The \code{rank.two.samples()} function calculates purely nonparametric rank-based 
+methods for the analysis of two independent samples. Specifically, it
+implements the Brunner-Munzel test and its generalizations for the Nonparametric Behrens-Fisher Problem,
+that is, testing whether the relative effect p=P(X<Y)+1/2*P(X=Y) of the two independent samples X and Y 
+is equal to 1/2.  Range preserving confidence intervals (and corresponding test statistics)
+are available using Logit or Probit transformations. The function also implements studentized permutation 
+tests and permutation based confidence intervals for p using any of the method above (see the details below). 
+Furthermore, the Wilcoxon-Mann-Whitney test (exact and asymptotic) can be used to test the equality of
+the two distribution functions of the two samples. The user can specify whether confidence intervals for shift
+ effects shall be computed. The \code{rank.two.samples()} function implements one-sided and two-sided tests 
+ and confidence intervals. You can plot the confidence intervals (for the relative
+effects) with the \code{plot()} function.
 }
 \details{
-The confidence intervals are given for the treatment effect \eqn{p = P(X_1 < Y_1) + \frac{1}{2}P(X_1 = Y_1)}
-underlying the Wilcoxon-Mann-Whitney test including tied data. Different methods for calculation can be chosen, 
-see Pauly et al.(2016) for the permutation approach, Brunner and Munzel (2000) for the t-approximation and
-Kaufmann et al.(2005) for the transformations. For plotting, the parameter plot.simci must be set to \code{TRUE}.
+The \code{rank.two.samples()} function calculates both transformed (logit or probit) and untransformed statistics 
+(normal or t.app) for testing the null hypothesis p=1/2. If a studentized permutation test is performed, then the
+permutation distribution of the respective statistics are computed, see Pauly et
+al.(2016) for details. In any case, the function reports the point estimator and its estimated standard error, 
+value of the test statistic, confidence interval and p-value. In case of separated samples, point estimator and standard error
+would be 0 and thus, test statistics would not be defined. In such a case, point
+estimator and its standard error are replaced by the numbers one would obtain if samples overlapped in a single point. 
+A plot of the confidence interval can be obtained with the plot function.
 }
 \examples{
-data(Muco)
+data(Muco)  
 Muco2 <- subset(Muco, Disease != "OAD")
+Muco2$Disease <- droplevels(Muco2$Disease)
+
 twosample <- rank.two.samples(HalfTime ~ Disease, data = Muco2, 
-   alternative = "greater", method = "probit", wilcoxon = "exact", plot.simci = FALSE, 
-   shift.int = FALSE)
+wilcoxon = "exact", permu = TRUE, shift.int = TRUE, nperm = 1000)
+twosample <- rank.two.samples(HalfTime ~ Disease, data = Muco2, 
+   alternative = "greater", method = "probit", wilcoxon = "exact", permu = TRUE,
+   shift.int = FALSE, nperm = 1000)
+plot(twosample)
 
 }
 \references{
@@ -66,9 +90,13 @@ theory and a small-sample approximation. Biometrical Journal 1, 17 - 21.
 Kaufmann, J., Werner, C., and Brunner, E. (2005). Nonparametric methods for analysing the
 accuracy of diagnostic tests with multiple readers. Statistical Methods in Medical Research 14, 129 - 146
 
-Pauly, M., Asendorf, T., and Konietschke, F. (2016). Permutation tests and confidence intervals for 
-the area under the ROC-curve. Biometrical Journal, to appear.
+Pauly, M., Asendorf, T.,  Konietschke, F. (2016). Permutation-based inference for the AUC: a unified approach for continuous and discontinuous data.##' Biometrical Journal, 58(6), 1319 -- 1337.
 }
 \seealso{
 \code{\link{rankFD}}
+}
+\author{
+Frank Konietschke
+Brunner, E., Bathke, A. C., Konietschke, F. (2018). Rank and Pseudo-Rank Procedures for Independent Observations in Factorial Designs. Springer International
+Publishing.
 }

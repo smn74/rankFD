@@ -2,7 +2,8 @@
 % Please edit documentation in R/samplesize.R
 \name{noether}
 \alias{noether}
-\title{Sample size calculation for the Wilcoxon-Mann-Whitney test using the Noether formula.}
+\title{Sample size calculation for the Wilcoxon-Mann-Whitney test using the Noether formula. The function estimates the sample size needed to detect the effect with
+pre-defined power at significance level alpha using Noether's formula'.}
 \usage{
 noether(alpha, power, t, p, x1 = c(0), ties = FALSE)
 }
@@ -23,7 +24,11 @@ noether(alpha, power, t, p, x1 = c(0), ties = FALSE)
 Returns a data frame with the sample sizes for each group
 }
 \description{
-Sample size calculation for the Wilcoxon-Mann-Whitney test using the Noether formula.
+Sample size calculation for the Wilcoxon-Mann-Whitney test using the Noether formula. The function estimates the sample size needed to detect the effect with
+pre-defined power at significance level alpha using Noether's formula'.
+}
+\examples{
+noether(0.05,0.8,1/2, 0.75)
 }
 \references{
 Noether, G. E. (1987). Sample Size Determination for Some Common Nonparametric Tests. Journal of the American Statistical Association 85, 645.647.

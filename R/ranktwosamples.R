@@ -1,452 +1,193 @@
 #' A function for analyzing two-sample problems
 #' 
-#' The \code{rank.two.samples()} function calculates the weighted or unweighted treatment effect in
-#' a two-sample problem. In addition to \code{\link{rankFD}}, the user can specify the alternative
-#' and choose from a variety of different possibilities to calculate confidence intervals, see the details
-#' below. Furthermore, a Wilcoxon test is calculate with the possibility to consider shift effects.
+#' The \code{rank.two.samples()} function calculates purely nonparametric rank-based 
+#' methods for the analysis of two independent samples. Specifically, it
+#' implements the Brunner-Munzel test and its generalizations for the Nonparametric Behrens-Fisher Problem,
+#' that is, testing whether the relative effect p=P(X<Y)+1/2*P(X=Y) of the two independent samples X and Y 
+#' is equal to 1/2.  Range preserving confidence intervals (and corresponding test statistics)
+#' are available using Logit or Probit transformations. The function also implements studentized permutation 
+#' tests and permutation based confidence intervals for p using any of the method above (see the details below). 
+#' Furthermore, the Wilcoxon-Mann-Whitney test (exact and asymptotic) can be used to test the equality of
+#' the two distribution functions of the two samples. The user can specify whether confidence intervals for shift
+#'  effects shall be computed. The \code{rank.two.samples()} function implements one-sided and two-sided tests 
+#'  and confidence intervals. You can plot the confidence intervals (for the relative
+#' effects) with the \code{plot()} function. 
 #' 
 #' @param formula A model \code{\link{formula}} object. The left hand side
 #'    contains the response variable and the right hand side contains the factor
-#'    variables of interest. An interaction term must be specified.
+#'    variables of interest. 
 #' @param data A data.frame, list or environment containing the variables in 
 #'    \code{formula}. The default option is \code{NULL}.
 #' @param conf.level A number specifying the confidence level; the default is 0.95.
-#' @param alternative Which alternative is considered? One of "two.sided", "less", "greater".
-#' @param rounds Value specifying the number of digits the results are rounded to.
+#' @param alternative A character string specifying the alternative hypothesis. One of "two.sided", "less", "greater". You can specify just the initial letter.
+#' @param rounds Value specifying the number of digits the results are rounded to. Default is 4 decimals.
 #' @param method specifying the method used for calculation of the confidence intervals.
-#'    One of "logit", "probit", "normal", "t.app" and "permu".
-#' @param plot.simci Logical, indicating whether or not confidence intervals
-#'    should be plotted
-#' @param info Logical. info = FALSE suppresses the output of additional information
+#'    One of "t.app", "logit", "probit" or "normal".
+
+#' @param permu A logical variable indicating whether you want to compute a studentized permutation test.
+#' @param info A logical variable. Here, info = FALSE suppresses the output of additional information
 #'    concerning e.g. the interpretation of the test results.
 #' @param wilcoxon asymptotic or exact calculation of Wilcoxon test.
 #' @param shift.int Logical, indicating whether or not shift effects should be considered.
 #' @param nperm Number of permutations used, default is 10000.
 #' 
+#' @author Frank Konietschke
+#' Brunner, E., Bathke, A. C., Konietschke, F. (2018). Rank and Pseudo-Rank Procedures for Independent Observations in Factorial Designs. Springer International
+#' Publishing.
+#' 
 #' @references Brunner, E. and Munzel, U. (2000). The nonparametric Behrens-Fisher problem: Asymptotic
 #' theory and a small-sample approximation. Biometrical Journal 1, 17 - 21.
 #' 
-#' Kaufmann, J., Werner, C., and Brunner, E. (2005). Nonparametric methods for analysing the
+#' @references Kaufmann, J., Werner, C., and Brunner, E. (2005). Nonparametric methods for analysing the
 #' accuracy of diagnostic tests with multiple readers. Statistical Methods in Medical Research 14, 129 - 146
 #' 
-#' Pauly, M., Asendorf, T., and Konietschke, F. (2016). Permutation tests and confidence intervals for 
-#' the area under the ROC-curve. Biometrical Journal, to appear.
-#' 
-#' @details The confidence intervals are given for the treatment effect \eqn{p = P(X_1 < Y_1) + \frac{1}{2}P(X_1 = Y_1)}
-#' underlying the Wilcoxon-Mann-Whitney test including tied data. Different methods for calculation can be chosen, 
-#' see Pauly et al.(2016) for the permutation approach, Brunner and Munzel (2000) for the t-approximation and
-#' Kaufmann et al.(2005) for the transformations. For plotting, the parameter plot.simci must be set to \code{TRUE}.
+#' @references Pauly, M., Asendorf, T.,  Konietschke, F. (2016). Permutation-based inference for the AUC: a unified approach for continuous and discontinuous data.##' Biometrical Journal, 58(6), 1319 -- 1337.
+#'
+#' @details  The \code{rank.two.samples()} function calculates both transformed (logit or probit) and untransformed statistics 
+#' (normal or t.app) for testing the null hypothesis p=1/2. If a studentized permutation test is performed, then the
+#' permutation distribution of the respective statistics are computed, see Pauly et
+#' al.(2016) for details. In any case, the function reports the point estimator and its estimated standard error, 
+#' value of the test statistic, confidence interval and p-value. In case of separated samples, point estimator and standard error
+#' would be 0 and thus, test statistics would not be defined. In such a case, point
+#' estimator and its standard error are replaced by the numbers one would obtain if samples overlapped in a single point. 
+#' A plot of the confidence interval can be obtained with the plot function.
+
 #' 
 #' @examples
-#' data(Muco)
+#' data(Muco)  
 #' Muco2 <- subset(Muco, Disease != "OAD")
+#' Muco2$Disease <- droplevels(Muco2$Disease)
+#'
 #' twosample <- rank.two.samples(HalfTime ~ Disease, data = Muco2, 
-#'    alternative = "greater", method = "probit", wilcoxon = "exact", plot.simci = FALSE, 
-#'    shift.int = FALSE)
+#' wilcoxon = "exact", permu = TRUE, shift.int = TRUE, nperm = 1000)
+#' twosample <- rank.two.samples(HalfTime ~ Disease, data = Muco2, 
+#'    alternative = "greater", method = "probit", wilcoxon = "exact", permu = TRUE,
+#'    shift.int = FALSE, nperm = 1000)
+#' plot(twosample)
 #' 
 #' @seealso \code{\link{rankFD}}
 #' 
+
+#' @importFrom coin wilcox_test pvalue statistic
 #' @export
 
 
 rank.two.samples<-function (formula, data, conf.level = 0.95, 
-alternative = c("two.sided", 
-    "less", "greater"), rounds = 3, method = c("logit", "probit", 
-    "normal", "t.app", "permu"), plot.simci = FALSE, info = TRUE, 
-wilcoxon=c("asymptotic","exact"),shift.int=TRUE,
-    nperm = 10000) 
-{
-    
-    alpha <- 1 - conf.level
-    if (alpha >= 1 || alpha <= 0) {
-        stop("The confidence level must be between 0 and 1!")
-        if (is.null(alternative)) {
-            stop("Please declare the alternative! (two.sided, less, greater)")
-        }
-    }
-
-    alternative <- match.arg(alternative)
-    method <- match.arg(method)
+alternative = c("two.sided", "less", "greater"), rounds = 4, method = c("t.app","logit", "probit", 
+"normal"), permu=TRUE,  info = TRUE, 
+wilcoxon=c("asymptotic","exact"),shift.int=TRUE, nperm = 10000) 
+{  
+alpha <- 1 - conf.level
+if (alpha >= 1 || alpha <= 0){stop("The confidence level must be between 0 and 1!")
+if (is.null(alternative)){stop("Please declare the alternative! (two.sided, less, greater)")}}
+alternative <- match.arg(alternative)
+method <- match.arg(method)
 wilcoxon <- match.arg(wilcoxon)
-    if (length(formula) != 3) {
-        stop("You can only analyse one-way layouts!")
-    }
-    dat <- model.frame(formula, droplevels(data))
-    if (ncol(dat) != 2) {
-        stop("Specify one response and only one class variable in the formula")
-    }
-    if (is.numeric(dat[, 1]) == FALSE) {
-        stop("Response variable must be numeric")
-    }
-    response <- dat[, 1]
-    factorx <- as.factor(dat[, 2])
-    fl <- levels(factorx)
-    a <- nlevels(factorx)
-    if (a > 2) {
-        stop("You want to perform a contrast test (the factor variable has more than two levels). Please use the function mctp!")
-    }
-    samples <- split(response, factorx)
-    n <- sapply(samples, length)
-    n1 <- n[1]
-    n2 <- n[2]
-    if (any(n == 1)) {
-        warn <- paste("The factor level", fl[n == 1], "has only one observation!")
-        stop(warn)
-    }
-    N <- sum(n)
+if (length(formula) != 3) {stop("You can only analyse one-way layouts!")}
+dat <- model.frame(formula, droplevels(data))
+if (ncol(dat) != 2) {
+   stop("Specify one response and only one class variable in the formula")}
+if (is.numeric(dat[, 1]) == FALSE) {stop("Response variable must be numeric")}
+response <- dat[, 1]
+factorx <- as.factor(dat[, 2])
+fl <- levels(factorx)
+a <- nlevels(factorx)
+if (a > 2){stop("You want to perform a contrast test (the factor variable has more than two levels)!")}
+samples <- split(response, factorx)
+n <- sapply(samples, length)
+n1 <- n[1]
+n2 <- n[2]
+if (any(n == 1)){stop(paste("The factor level", fl[n == 1], "has only one observation!"))}
+N <- sum(n)
+data.info <- data.frame(Sample = fl, Size = n)
+cmpid <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
+   
+#------------------Compute the values of the Test Statistics-------------------#
   
-    
-    rxy <- rank(c(samples[[1]], samples[[2]]))
-    rx <- rank(c(samples[[1]]))
-    ry <- rank(c(samples[[2]]))
-    pl1 <- 1/n2 * (rxy[1:n1] - rx)
-    pl2 <- 1/n1 * (rxy[(n1 + 1):N] - ry)
-    pd <- mean(pl2)
-    pd1 <- (pd == 1)
-    pd0 <- (pd == 0)
-    pd[pd1] <- 0.999
-    pd[pd0] <- 0.001
-    s1 <- var(pl1)/n1
-    s2 <- var(pl2)/n2
-    V <- N * (s1 + s2)
-    singular.bf <- (V == 0)
-    V[singular.bf] <- N/(2 * n1 * n2)
-    
-    switch(method, normal = {
-        AsyMethod <- "Normal - Approximation"
-        T <- sqrt(N) * (pd - 1/2)/sqrt(V)
-  cmpid <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
-plotz <- 1
-        switch(alternative, two.sided = {
-            text.Output <- paste("True relative effect p is unequal to 1/2")
-            p.Value <- min(2 - 2 * pnorm(T), 2 * pnorm(T))
-            crit <- qnorm(1 - alpha/2)
-            Lower <- pd - crit/sqrt(N) * sqrt(V)
-            Upper <- pd + crit/sqrt(N) * sqrt(V)
-        }, less = {
-            text.Output <- paste("True relative effect p is less than 1/2")
-            p.Value <- pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- 0
-            Upper <- pd + crit/sqrt(N) * sqrt(V)
-        }, greater = {
-            text.Output <- paste("True relative effect p is greater than 1/2")
-            p.Value <- 1 - pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- pd - crit/sqrt(N) * sqrt(V)
-            Upper <- 1
-        })
-        data.info <- data.frame(Sample = fl, Size = n)
-        Analysis <- data.frame(Effect = cmpid, Estimator = round(pd, 
-            rounds), Lower = round(Lower, rounds), Upper = round(Upper, 
-            rounds), T = round(T, rounds), p.Value = round(p.Value, 
-            rounds))
-        rownames(Analysis) <- 1
-    }, t.app = {
-plotz <- 1
-cmpid <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
-        T <- sqrt(N) * (pd - 1/2)/sqrt(V)
-        df.sw <- (s1 + s2)^2/(s1^2/(n1 - 1) + s2^2/(n2 - 1))
-        df.sw[is.nan(df.sw)] <- 1000
-        AsyMethod <- paste("Brunner - Munzel - T - Approx with", 
-            round(df.sw, rounds), "DF")
-        switch(alternative, two.sided = {
-            text.Output <- paste("True relative effect p is unequal to 1/2")
-            p.Value <- min(2 - 2 * pt(T, df = df.sw), 2 * pt(T, 
-                df = df.sw))
-            crit <- qt(1 - alpha/2, df = df.sw)
-            Lower <- pd - crit/sqrt(N) * sqrt(V)
-            Upper <- pd + crit/sqrt(N) * sqrt(V)
-        }, less = {
-            text.Output <- paste("True relative effect p is less than 1/2")
-            p.Value <- pt(T, df = df.sw)
-            crit <- qt(1 - alpha, df = df.sw)
-            Lower <- 0
-            Upper <- pd + crit/sqrt(N) * sqrt(V)
-        }, greater = {
-            text.Output <- paste("True relative effect p is greater than 1/2")
-            p.Value <- 1 - pt(T, df = df.sw)
-            crit <- qt(1 - alpha, df = df.sw)
-            Lower <- pd - crit/sqrt(N) * sqrt(V)
-            Upper <- 1
-        })
-        data.info <- data.frame(Sample = fl, Size = n)
-        Analysis <- data.frame(Effect = cmpid, Estimator = round(pd, 
-            rounds), Lower = round(Lower, rounds), Upper = round(Upper, 
-            rounds), T = round(T, rounds), p.Value = round(p.Value, 
-            rounds))
-        rownames(Analysis) <- 1
-        result <- list(Info = data.info, Analysis = Analysis)
-    }, logit = {
-cmpid <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
-plotz <- 1
-        AsyMethod <- "Logit - Transformation"
-        logitf <- function(p) {
-            log(p/(1 - p))
-        }
-        expit <- function(G) {
-            exp(G)/(1 + exp(G))
-        }
-        logit.pd <- logitf(pd)
-        logit.dev <- 1/(pd * (1 - pd))
-        vd.logit <- logit.dev^2 * V
-        T <- (logit.pd) * sqrt(N/vd.logit)
-        switch(alternative, two.sided = {
-            text.Output <- paste("True relative effect p is unequal to 1/2")
-            p.Value <- min(2 - 2 * pnorm(T), 2 * pnorm(T))
-            crit <- qnorm(1 - alpha/2)
-            Lower <- expit(logit.pd - crit/sqrt(N) * sqrt(vd.logit))
-            Upper <- expit(logit.pd + crit/sqrt(N) * sqrt(vd.logit))
-        }, less = {
-            text.Output <- paste("True relative effect p is less than 1/2")
-            p.Value <- pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- 0
-            Upper <- expit(logit.pd + crit/sqrt(N) * sqrt(vd.logit))
-        }, greater = {
-            text.Output <- paste("True relative effect p is greater than 1/2")
-            p.Value <- 1 - pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- expit(logit.pd - crit/sqrt(N) * sqrt(vd.logit))
-            Upper <- 1
-        })
-        data.info <- data.frame(Sample = fl, Size = n)
-        Analysis <- data.frame(Effect = cmpid, Estimator = round(pd, 
-            rounds), Lower = round(Lower, rounds), Upper = round(Upper, 
-            rounds), T = round(T, rounds), p.Value = round(p.Value, 
-            rounds))
-        rownames(Analysis) <- 1
-        result <- list(Info = data.info, Analysis = Analysis)
-    }, 
-probit = {
-cmpid <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
-plotz <- 1
-        AsyMethod <- "Probit - Transformation"
-        probit.pd <- qnorm(pd)
-        probit.dev <- sqrt(2 * pi)/(exp(-0.5 * qnorm(pd) * qnorm(pd)))
-        vd.probit <- probit.dev^2 * V
-        T <- (probit.pd) * sqrt(N/vd.probit)
-        switch(alternative, two.sided = {
-            text.Output <- paste("True relative effect p is uneqal to 1/2")
-            p.Value <- min(2 - 2 * pnorm(T), 2 * pnorm(T))
-            crit <- qnorm(1 - alpha/2)
-            Lower <- pnorm(probit.pd - crit/sqrt(N) * sqrt(vd.probit))
-            Upper <- pnorm(probit.pd + crit/sqrt(N) * sqrt(vd.probit))
-        }, less = {
-            text.Output <- paste("True relative effect p is unequal to 1/2")
-            p.Value <- pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- 0
-            Upper <- pnorm(probit.pd + crit/sqrt(N) * sqrt(vd.probit))
-        }, greater = {
-            text.Output <- paste("True relative effect p is greater than 1/2")
-            p.Value <- 1 - pnorm(T)
-            crit <- qnorm(1 - alpha)
-            Lower <- pnorm(probit.pd - crit/sqrt(N) * sqrt(vd.probit))
-            Upper <- 1
-        })
-        data.info <- data.frame(Sample = fl, Size = n)
-        Analysis <- data.frame(Effect = cmpid, Estimator = round(pd, 
-            rounds), Lower = round(Lower, rounds), Upper = round(Upper, 
-            rounds), T = round(T, rounds), p.Value = round(p.Value, 
-            rounds))
-        rownames(Analysis) <- 1
-        result <- list(Info = data.info, Analysis = Analysis)
-    }, permu = {
-plotz <- 3
-cmpid <- c("id", "logit", "probit")   
-Tperm=Tlogitperm=Tprobitperm=c()
+BMstats <- BMstat(samples[[1]],samples[[2]],n1,n2,method)
 
-ausgang = BMstat(samples[[1]],samples[[2]],n1,n2)
-for(h in 1:nperm){
-respperm=sample(response)
-phelp=BMstat(respperm[1:n1],respperm[(n1+1):N],n1,n2)
-Tperm[h] = phelp$T
-Tlogitperm[h] = phelp$Logit
-Tprobitperm[h] = phelp$Probit
-}
-p.PERM1 = mean(ausgang$T >= Tperm)
-p.PERMLogit1 = mean(ausgang$Logit >= Tlogitperm)
-p.PERMProbit1 = mean(ausgang$Probit >= Tprobitperm)
-c1 = quantile(Tperm,(1-conf.level)/2)
-c2 = quantile(Tperm,1-(1-conf.level)/2)
+#-----------------Compute Test for Relative Effects----------------------------#
+crit1 <- switch(alternative,two.sided={qnorm(1-alpha/2)},less={qnorm(1-alpha)},greater={qnorm(1-alpha)})
+crit2 <- switch(alternative,two.sided={qnorm(alpha/2)},less={qnorm(1-alpha)},greater={qnorm(1-alpha)})
+ci.limits <- limits2(BMstats[,6],crit1,crit2,BMstats[,7],alternative,method)
+pvalues=switch(alternative,two.sided={2*min(pnorm(BMstats[,5]),1-pnorm(BMstats[,5]))},
+less={pnorm(BMstats[,5])},greater={1-pnorm(BMstats[,5])})
+if(method=="t.app"){
+pvalues=switch(alternative,two.sided={2*min(pt(BMstats[,5],BMstats[,9]),1-pt(BMstats[,5],BMstats[,9]))},
+less={pt(BMstats[,5],BMstats[,9])},greater={1-pt(BMstats[,5],BMstats[,9])})
+crit1 <- switch(alternative,two.sided={qt(1-alpha/2,BMstats[,9])},less={qt(1-alpha,BMstats[,9])},greater={qt(1-alpha,BMstats[,9])})
+crit2 <- switch(alternative,two.sided={qt(alpha/2,BMstats[,9])},less={qt(1-alpha,BMstats[,9])},greater={qt(1-alpha,BMstats[,9])})
+ci.limits <- limits2(BMstats[,6],crit1,crit2,BMstats[,7],alternative,method)}  
+Rel.Effects <- data.frame(Effect=cmpid, Estimator=BMstats[,1], Std.Error=BMstats[,10], 
+T=BMstats[,5],Lower=ci.limits[,1],Upper=ci.limits[,2],p.Value=pvalues)
+Rel.Effects[,2:7] <- round(Rel.Effects[,2:7],rounds)
+rownames(Rel.Effects)<-""
 
-c1LOGIT = quantile(Tlogitperm,(1-conf.level)/2)
-c2LOGIT = quantile(Tlogitperm,1-(1-conf.level)/2)
-c1PROBIT = quantile(Tprobitperm,(1-conf.level)/2)
-c2PROBIT = quantile(Tprobitperm,1-(1-conf.level)/2)
-c1lower = quantile(Tperm,(1-conf.level))
-c2upper = quantile(Tperm,1-(1-conf.level))
-c1LOGITlower = quantile(Tlogitperm,(1-conf.level))
-c2LOGITupper = quantile(Tlogitperm,1-(1-conf.level))
-c1PROBITlower = quantile(Tprobitperm,(1-conf.level))
-c2PROBITupper = quantile(Tprobitperm,1-(1-conf.level))
-  
-
-        switch(alternative, two.sided = {
-            text.Output <- paste("True relative effect p is unequal to 1/2")
-            p.PERM <- min(2 - 2 * p.PERM1, 2 * p.PERM1)
-            p.LOGIT <- min(2 - 2 * p.PERMLogit1, 2 * p.PERMLogit1)
-            p.PROBIT <- min(2 - 2 * p.PERMProbit1, 2 *p.PERMProbit1)
-        UntenRS <- pd - sqrt(ausgang$sdx/N) * c2
-        ObenRS <- pd - sqrt(ausgang$sdx/N) * c1
-
-        ULogitRS <- logit(pd) - ausgang$slogit/sqrt(N) * c2LOGIT
-        OLogitRS <- logit(pd) - ausgang$slogit/sqrt(N) * c1LOGIT
-        UntenLogitRS <- expit(ULogitRS)
-        ObenLogitRS <- expit(OLogitRS)
-        UProbitRS <- qnorm(pd) - ausgang$sprobit/sqrt(N) * c2PROBIT
-        OProbitRS <- qnorm(pd) - ausgang$sprobit/sqrt(N) * c1PROBIT
-
-        UntenProbitRS <- pnorm(UProbitRS)
-        ObenProbitRS <- pnorm(OProbitRS)
-        Statistic <- round(c(ausgang$T, ausgang$Logit, ausgang$Probit), rounds)
-        Estimator <- round(rep(pd, 3), rounds)
-        Lower <- round(c(UntenRS, UntenLogitRS, UntenProbitRS), 
-            rounds)
-        Upper <- round(c(ObenRS, ObenLogitRS, ObenProbitRS), 
-            rounds)
-        p.value <- c(p.PERM, p.LOGIT, p.PROBIT)
-		Analysis <- data.frame(Estimator, Statistic, Lower, 
-            Upper, p.value, row.names = c("id", "logit", "probit"))
-        }, less = {
-            text.Output <- paste("True relative effect p is less than 1/2")
-            p.PERM = p.PERM1
-            p.LOGIT <- p.PERMLogit1
-            p.PROBIT <- p.PERMProbit1
-        UntenRS <- 0
-        ObenRS <- pd - sqrt(ausgang$sdx/N) * c1lower
-        OLogitRS <- logit(pd) - ausgang$slogit/sqrt(N) * c1LOGITlower
-        UntenLogitRS <-0
-        ObenLogitRS <- expit(OLogitRS)
-        OProbitRS <- qnorm(pd) - ausgang$sprobit/sqrt(N) * c1PROBITlower
-
-        UntenProbitRS <- 0
-        ObenProbitRS <- pnorm(OProbitRS)
-        Statistic <- round(c(ausgang$T, ausgang$Logit, ausgang$Probit), rounds)
-        Estimator <- round(rep(pd, 3), rounds)
-        Lower <- round(c(UntenRS, UntenLogitRS, UntenProbitRS), 
-            rounds)
-        Upper <- round(c(ObenRS, ObenLogitRS, ObenProbitRS), 
-            rounds)
-        p.value <- c(p.PERM, p.LOGIT, p.PROBIT)
-		Analysis <- data.frame(Estimator, Statistic, Lower, 
-            Upper, p.value, row.names = c("id", "logit", "probit"))
-
-        }, greater = {
-            text.Output <- paste("True relative effect p is greater than 1/2")
-            p.PERM = 1-p.PERM1
-            p.LOGIT <-1- p.PERMLogit1
-            p.PROBIT <- 1-p.PERMProbit1
-        UntenRS <- pd - sqrt(ausgang$sdx/N) * c2upper
-        ObenRS <- 1
-	  ULogitRS <- logit(pd) - ausgang$slogit/sqrt(N) * c2LOGITupper
-        UntenLogitRS <-expit(ULogitRS)
-        ObenLogitRS <- 1
-      
-
-        UProbitRS <- qnorm(pd) - ausgang$sprobit/sqrt(N) * c2PROBITupper
-        UntenProbitRS <- pnorm(UProbitRS)
-	  ObenProbitRS <- 1
-        Statistic <- round(c(ausgang$T, ausgang$Logit, ausgang$Probit), rounds)
-        Estimator <- round(rep(pd, 3), rounds)
-        Lower <- round(c(UntenRS, UntenLogitRS, UntenProbitRS), 
-            rounds)
-        Upper <- round(c(ObenRS, ObenLogitRS, ObenProbitRS), 
-            rounds)
-        p.value <- round(c(p.PERM, p.LOGIT, p.PROBIT), rounds)
-		Analysis <- data.frame(Link=cmpid, Estimator, Statistic, Lower, 
-            Upper, p.value, row.names = c("id","logit","probit"))
+#-------------------Compute the Studentized Permutation Tests------------------#
+if(permu){
+permustat <-c()
+Tpermu<-sapply(1:nperm,function(arg){
+   resperm <- sample(response)
+   BMstat(resperm[1:n1],resperm[(n1+1):N],n1,n2,method)[,5]})
+p.permu <- switch(alternative, two.sided={2*min(mean(Tpermu<=BMstats[,5]),mean(Tpermu>=BMstats[,5]))},
+  less={mean(Tpermu<=BMstats[,5])}, greater={mean(Tpermu>=BMstats[,5])})
+crit1permu <-switch(alternative,two.sided={quantile(Tpermu,1-alpha/2)},less={quantile(Tpermu,(1-alpha))},greater={quantile(Tpermu,(1-alpha))})
+crit2permu <- switch(alternative,two.sided={quantile(Tpermu,alpha/2)},less={quantile(Tpermu,(1-alpha))},greater={quantile(Tpermu,(1-alpha))})
+ci.limits.permu <- limits2(BMstats[,6],crit1permu,crit2permu,BMstats[,7],alternative,method)
+Stud.Perm <- data.frame(Effect=cmpid, Estimator=BMstats[,1], Std.Error=BMstats[,10], T=BMstats[,5],
+Lower=ci.limits.permu[,1],Upper=ci.limits.permu[,2],p.Value=p.permu)
+Stud.Perm[,2:7] <- round(Stud.Perm[,2:7],rounds)
+rownames(Stud.Perm)<-""}
+if(!permu){Stud.Perm<-NULL}
 
 
-        })
+#-----------------------------Wilcoxon-Mann-Whitney ---------------------------#
+alternativeakt <- switch(alternative,two.sided={"two.sided"}, less={"greater"}, greater="less")
+Wilcox <- wilcox_test(response~factorx,distribution=wilcoxon,alternative=alternativeakt,conf.int=TRUE,conf.level=(1 - alpha))
+if(wilcoxon=="asymptotic"){
+WilcoxonTest <- data.frame( Effect=cmpid, Estimator=BMstats[,1], Std.Error=sqrt(BMstats[,8]/N),
+Statistic=-1*statistic(Wilcox), p.Value=round(pvalue(Wilcox),rounds))
+WilcoxonTest[,2:5]<-round(WilcoxonTest[,2:5],rounds)}
+if(wilcoxon=="exact"){
+WilcoxonTest <- data.frame( Effect=cmpid, Estimator=BMstats[,1],
+Statistic=BMstats[,11], p.Value=round(pvalue(Wilcox),rounds))
+WilcoxonTest[,2:4]<-round(WilcoxonTest[,2:4],rounds)}
+rownames(WilcoxonTest)<-"" 
 
-        
-        AsyMethod <- "Studentized Permutation Test (+ delta-method)"
-        
-        data.info <- data.frame(Sample = fl, Size = n)
-       result <- list(Info = data.info, Analysis = Analysis)
-    })
-
-
-#------------SHIFT EFFECTS--------------------------------#
+#------------------------------------Shift Effects-----------------------------#
+if(shift.int){
 HL.help=expand.grid(samples[[1]],samples[[2]])
-HL=median(HL.help[,2]-HL.help[,1])
-switch(wilcoxon,asymptotic={
-Wilcox = wilcox_test(response~factorx,distribution="asymptotic",
-alternative=alternative,
-conf.int=TRUE,conf.level=(1 - alpha))
-p.wilcox=pvalue(Wilcox)
-Z.wilcox=statistic(Wilcox)
-if(shift.int==TRUE){
-shiftint=sort(-1*c(Wilcox@confint(1-alpha)$conf.int))
+effect.wilcoxon=median(HL.help[,2]-HL.help[,1])
+shiftint=sort(-1*Wilcox@confint(1-alpha)$conf.int)
 Lower.Shift=shiftint[1]
 Upper.Shift=shiftint[2]
-}
-},
-exact={
-Wilcox = wilcox_test(response~factorx,distribution="exact",
-alternative=alternative,conf.int=TRUE,conf.level=(1 - alpha))
-p.wilcox=pvalue(Wilcox)
-Z.wilcox=sum(rxy[(n1+1):N])
-if(shift.int==TRUE){
-shiftint=sort(-1*c(confint(Wilcox)[1]$conf.int))
-Lower.Shift=shiftint[1]
-Upper.Shift=shiftint[2]
-}
-})
-
-
-
-
-if(shift.int==FALSE){
+cmpidWilcoxon <- paste("delta","(",fl[2], "-", fl[1], ")", sep = "")
+delta.interpretation="delta(.): Hodges-Lehmann Estimator"
+shift.result <- data.frame(Effect=cmpidWilcoxon, Estimator=effect.wilcoxon,  Lower=Lower.Shift,Upper=Upper.Shift)
+shift.result[,2:4]<-round(shift.result[,2:4],rounds)
+rownames(shift.result)<-""}
+if(!shift.int){
 Lower.Shift = NA
-Upper.Shift= NA
-HL = NA
-}
-cmpidWilcoxon1 <- paste("p(", fl[1], ",", fl[2], ")", sep = "")
-cmpidWilcoxon2 <- paste("delta","(",fl[2], "-", fl[1], ")", sep = "")
+Upper.Shift=NA
+effect.wilcoxon = BMstats[,1]
+cmpidWilcoxon <- paste("p(", fl[1], ",", fl[2], ")", sep = "")  
+delta.interpretation=NA
+shift.result<-NA}
 
-
-Wilcoxon.Test=data.frame(Effect = cmpidWilcoxon1, Estimator=pd,
-Statistic=Z.wilcox,p.Value=as.numeric(p.wilcox),Shift=cmpidWilcoxon2, Hodges.Lehmann=HL,Lower=Lower.Shift,Upper=Upper.Shift)
- result <- list(Info = data.info, Analysis = Analysis, Wilcoxon=Wilcoxon.Test)
-
-    if (plot.simci == TRUE) {
-
-        text.Ci <- paste((1 - alpha) * 100, "%", "Confidence Interval for p")
-        Lowerp <- "|"
-
-        plot(rep(pd, plotz), 1:plotz, xlim = c(0, 1), pch = 15, 
-            axes = FALSE, xlab = "", ylab = "")
-        points(Lower, 1:plotz, pch = Lowerp, font = 2, cex = 2)
-        points(Upper, 1:plotz, pch = Lowerp, font = 2, cex = 2)
-        abline(v = 0.5, lty = 3, lwd = 2)
-        for (ss in 1:plotz) {
-            polygon(x = c(Lower[ss], Upper[ss]), y = c(ss, ss), 
-                lwd = 2)
-        }
-        axis(1, at = seq(0, 1, 0.1))
-        axis(2, at = 1:plotz, labels = cmpid, font = 2)
-        box()
-        title(main = c(text.Ci, paste("Method:", AsyMethod)))
-    }
-    if (info == TRUE) {
-        cat("\n", "#------Nonparametric Test Procedures and Confidence Intervals for relative  effects-----#", 
-            "\n", "\n", "-", "Alternative Hypothesis: ", text.Output, 
-            "\n", "-", "Confidence level:", (1 - alpha) * 100, 
-            "%", "\n", "-", "Method", "=", AsyMethod, "\n", "\n", 
-            "#---------------------------Interpretation----------------------------------#", 
-            "\n", "p(a,b)", ">", "1/2", ":", "b tends to be larger than a", 
-            "\n", "#---------------------------------------------------------------------------#", 
-            "\n", "\n")
-    }
-    #result$input <- input.list
-    #result$text.Output <- text.Output
-    #result$cmpid <- cmpid
-    #result$AsyMethod <- AsyMethod
-    #class(result) <- "ranktwosamples"
-    return(result)
+#---------------------------------RESULT and Output----------------------------#
+result <-list(Call=formula,Descriptive=data.info, Analysis=Rel.Effects, Studentized.Permutation=Stud.Perm, Wilcoxon=WilcoxonTest, Shift.Effects=shift.result)
+output.alternative=switch(alternative, two.sided={"Relative Effect is unequal to 1/2"},less={"Relative Effect is less than 1/2"},
+greater={"Relative Effect is greater than 1/2"})
+output.interpretation=paste("If", cmpid, ">1/2, then data in group",fl[2],"tend to be larger than those in group",fl[1])
+output.method=switch(method,normal={"Normal Approximation"},logit={"Logit Transformation"},probit={"Probit Transformation"},
+t.app={paste("T-Approximation with", round(BMstats[,9],rounds), "DF")})
+#-------------------------Prepare Plot and Print Tables------------------------#
+result$plotting <- list(method=method, Effects=Rel.Effects, alpha=alpha)
+result$output <-list(output.alternative=output.alternative,output.interpretation=output.interpretation,
+output.method=output.method,permu=permu,nperm=nperm,info=info,wilcoxon=wilcoxon,alpha=alpha, delta.interpretation=delta.interpretation)
+  
+class(result) <- "ranktwosamples"
+return(result)
 }
 
 

@@ -4,12 +4,14 @@
 \name{Coal}
 \alias{Coal}
 \title{Coal Acidity}
-\format{A data frame with 18 rows and 3 variables:
+\format{
+A data frame with 18 rows and 3 variables:
 \describe{
   \item{Acidity}{resulting acidity values}
   \item{NaOH}{the NaOH concentration}
   \item{Type}{three different types of coal: "Morwell", "Yallourn" and "Maddingley"}
-}}
+}
+}
 \source{
 Hollander, M., Wolfe, D. A., Chicken, E. (2014) \emph{Nonparametric Statistical Methods}. Wiley Series in Probability and Statistics.
 
